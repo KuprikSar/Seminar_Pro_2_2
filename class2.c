@@ -115,17 +115,18 @@ void go(struct snake_t *head)
     refresh();
 }
 
-void changeDirection(struct snake_t* snake, const int32_t key)
+void changeDirection(snake_t* snake, const int32_t key)
 {
-    if (key == snake->controls.down)
+    if (key == snake->controls.down && snake->direction != UP)
         snake->direction = DOWN;
-    else if (key == snake->controls.up)
+    else if (key == snake->controls.up && snake->direction != DOWN)
         snake->direction = UP;
-    else if (key == snake->controls.right)
+    else if (key == snake->controls.right && snake->direction != LEFT)
         snake->direction = RIGHT;
-    else if (key == snake->controls.left)
+    else if (key == snake->controls.left && snake->direction != RIGHT)
         snake->direction = LEFT;
 }
+
 
 /*
  Движение хвоста с учетом движения головы
@@ -144,6 +145,15 @@ void goTail(struct snake_t *head)
     head->tail[0].y = head->y;
 }
 
+int checkDirection(snake_t* snake, int key_pressed, int prevDirection) 
+{
+    if (key_pressed == ERR) 
+    {
+        return 1;
+    }
+    return 1;
+}
+
 int main()
 {
 snake_t* snake = (snake_t*)malloc(sizeof(snake_t));
@@ -154,18 +164,19 @@ snake_t* snake = (snake_t*)malloc(sizeof(snake_t));
     noecho();            // Отключаем echo() режим при вызове getch
     curs_set(FALSE);    //Отключаем курсор
     mvprintw(0, 0,"Use arrows for control. Press 'F10' for EXIT");
-    timeout(0);    //Отключаем таймаут после нажатия клавиши в цикле
+    timeout(100);   //Таймаут если кнопка не была нажата, иначе будет 1frame game
     int key_pressed=0;
-    while( key_pressed != STOP_GAME )
+    int prev_direction = snake->direction; //прошлое значение клавиши
+    while (key_pressed != STOP_GAME)
     {
-        key_pressed = getch(); // Считываем клавишу
-        if (checkDirection)
+        key_pressed = getch();
+        if (checkDirection(snake, key_pressed, prev_direction))
         {
-            go(snake);
-            goTail(snake);
-            timeout(100); // Задержка при отрисовке
             changeDirection(snake, key_pressed);
-        }                
+        }
+        go(snake);
+        goTail(snake);
+        refresh();
     }
     free(snake->tail);
     free(snake);
